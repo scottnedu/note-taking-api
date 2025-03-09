@@ -32,7 +32,7 @@ app.post('/api/notes', async (req, res, next) => {
 
 //Root Route
 app.get('/', (req, res) => {
-  res.send('Welcome to the Note-Taking API!');
+  res.send(`<h1>Welcome to the Note-Taking API!</h1> <p>If you want to view note kindly use this url: https://note-taking-api-4hf6.onrender.com/api/notes</p>`);
 });
 
 // GET endpoint to fetch all notes
