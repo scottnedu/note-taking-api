@@ -21,11 +21,27 @@ const port = 3000;
 // Middleware to parse JSON bodies
 app.use(express_1.default.json());
 // Connect to MongoDB
-const mongoURI = 'mongodb+srv://oyiohachinedujude:<qFs6vZ9N4Byp0akt@cluster0.v1baz.mongodb.net/notesdb?retryWrites=true&w=majority&appName=Cluster0';
+const mongoURI = 'mongodb+srv://oyiohachinedujude:qFs6vZ9N4Byp0akt@cluster0.v1baz.mongodb.net/notesdb?retryWrites=true&w=majority&appName=Cluster0';
 mongoose_1.default.connect(mongoURI)
     .then(() => console.log('Connected to MongoDB'))
     .catch(err => console.error('Failed to connect to MongoDB', err));
-// Routes
+// POST endpoint to add a note
+app.post('/api/notes', (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { title, content } = req.body;
+        if (!title || !content)
+            throw new errors_1.ValidationError('Title and content are required');
+        const newNote = new Note_1.Note({ title, content });
+        yield newNote.save();
+        console.log('New note saved:', newNote);
+        res.status(201).json(newNote);
+    }
+    catch (err) {
+        console.error('Error saving note:', err);
+        next(err);
+    }
+}));
+// GET endpoint to fetch all notes
 app.get('/api/notes', (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const notes = yield Note_1.Note.find();
@@ -35,6 +51,7 @@ app.get('/api/notes', (req, res, next) => __awaiter(void 0, void 0, void 0, func
         next(err);
     }
 }));
+// GET endpoint to fetch a single note by ID
 app.get('/api/notes/:id', (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const note = yield Note_1.Note.findById(req.params.id);
@@ -46,25 +63,30 @@ app.get('/api/notes/:id', (req, res, next) => __awaiter(void 0, void 0, void 0, 
         next(err);
     }
 }));
-app.post('/api/notes', (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        const { title, content } = req.body;
-        if (!title || !content)
-            throw new errors_1.ValidationError('Title and content are required');
-        const newNote = new Note_1.Note({ title, content });
-        yield newNote.save();
-        res.status(201).json(newNote);
-    }
-    catch (err) {
-        next(err);
-    }
-}));
+// DELETE endpoint to delete a note by ID
 app.delete('/api/notes/:id', (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const note = yield Note_1.Note.findByIdAndDelete(req.params.id);
         if (!note)
             throw new errors_1.NotFoundError('Note not found');
         res.json({ message: 'Note deleted' });
+    }
+    catch (err) {
+        next(err);
+    }
+}));
+// PUT endpoint to update a note by ID
+app.put('/api/notes/:id', (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { title, content } = req.body;
+        if (!title && !content) {
+            throw new errors_1.ValidationError('At least one field (title or content) is required for update');
+        }
+        const updatedNote = yield Note_1.Note.findByIdAndUpdate(req.params.id, { title, content, updatedAt: Date.now() }, { new: true });
+        if (!updatedNote) {
+            throw new errors_1.NotFoundError('Note not found');
+        }
+        res.json(updatedNote);
     }
     catch (err) {
         next(err);
@@ -84,5 +106,5 @@ app.use((err, req, res, next) => {
 });
 // Start the server
 app.listen(port, () => {
-    console.log(`Server is running on http://localhost:${port}`);
+    console.log(`Server is running on Port: ${port}`);
 });

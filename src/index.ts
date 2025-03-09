@@ -22,8 +22,10 @@ app.post('/api/notes', async (req, res, next) => {
     if (!title || !content) throw new ValidationError('Title and content are required');
     const newNote = new Note({ title, content });
     await newNote.save();
+    console.log('New note saved:', newNote); 
     res.status(201).json(newNote);
   } catch (err) {
+    console.error('Error saving note:', err);
     next(err);
   }
 });
@@ -60,6 +62,32 @@ app.delete('/api/notes/:id', async (req, res, next) => {
   }
 });
 
+
+// PUT endpoint to update a note by ID
+app.put('/api/notes/:id', async (req, res, next) => {
+  try {
+    const { title, content } = req.body;
+
+    if (!title && !content) {
+      throw new ValidationError('At least one field (title or content) is required for update');
+    }
+
+    const updatedNote = await Note.findByIdAndUpdate(
+      req.params.id,
+      { title, content, updatedAt: Date.now() },
+      { new: true }
+    );
+
+    if (!updatedNote) {
+      throw new NotFoundError('Note not found');
+    }
+
+    res.json(updatedNote);
+  } catch (err) {
+    next(err);
+  }
+});
+
 // Global error handler
 app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
   if (err instanceof NotFoundError) {
@@ -73,5 +101,5 @@ app.use((err: Error, req: express.Request, res: express.Response, next: express.
 
 // Start the server
 app.listen(port, () => {
-  console.log(`Server is running on http://localhost:${port}`);
+  console.log(`Server is running on Port: ${port}`);
 });
