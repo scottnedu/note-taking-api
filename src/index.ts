@@ -30,6 +30,11 @@ app.post('/api/notes', async (req, res, next) => {
   }
 });
 
+//Root Route
+app.get('/', (req, res) => {
+  res.send('Welcome to the Note-Taking API!');
+});
+
 // GET endpoint to fetch all notes
 app.get('/api/notes', async (req, res, next) => {
   try {
